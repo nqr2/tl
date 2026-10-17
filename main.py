@@ -69,6 +69,9 @@ class Peek:
 
         return self._peek
 
+    def __iter__(self):
+        return self
+
     def __next__(self):
         self.pos += 1
         if self._peek is not None:
@@ -82,7 +85,7 @@ SINGLE_PUNCTUATION = "()[]{},.;:#"
 PUNCTUATION = "?!+-&/%$@^<>*"
 
 
-def lexer(text):
+def lexer_(text):
     head = Peek(iter(text))
 
     try:
@@ -174,10 +177,59 @@ def lexer(text):
         pass
 
 
+def lexer(text):
+    return Peek(lexer_(text))
+
+
+def the(tag):
+    def w(l):
+        if l.peek().tag == tag:
+            return next(l)
+
+    return w
+
+
+def oneof(tags):
+    def w(l):
+        if l.peek().tag in tags:
+            return next(l)
+
+    return w
+
+
+def join(inners):
+    def w(l):
+        r = []
+        for i in inners:
+            x = i(l)
+            if x is None:
+                return None
+            r.append(x)
+        return r
+
+    return w
+
+
+def either(inners):
+    def w(l):
+        for i in inners:
+            x = i(l)
+            if x is not None:
+                return x
+
+    return w
+
+
+def p_toplevel(lexer):
+    [_, name, _] = join(
+        [the(TokenTag.KImport), the(TokenTag.Identifier), the(TokenTag.Dot)]
+    )(lexer)
+    print(name)
+
+
 text = """
-import (2) of: "some" other-stuff.
-left <- one <*> two or? five.
+import this.
 """
 
-for token in lexer(text):
-    print(token)
+l = lexer(text)
+p_toplevel(l)
