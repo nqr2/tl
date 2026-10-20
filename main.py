@@ -30,17 +30,14 @@ TokenTag = Enum(
         ("KModule", "module"),
         ("KImport", "import"),
         ("KType", "type"),
-        ("KIf", "if"),
-        ("KElse", "else"),
-        ("KWhile", "while"),
-        ("KLoop", "loop"),
         ("KVar", "var"),
         ("KConst", "const"),
         ("KExport", "export"),
         ("KMatch", "match"),
         ("KEnum", "enum"),
         ("KRecord", "record"),
-        ("KReturn", "return"),
+        ("KLabel", "label"),
+        ("KBreak", "break"),
         ("KAnd", "and"),
         ("KThen", "then"),
         ("KAs", "as"),
@@ -79,6 +76,32 @@ class Peek:
             return tmp
 
         return next(self._inner)
+
+
+@dataclass
+class ExpectFailure:
+    expected: TokenTag
+    got: TokenTag
+
+
+class Lexer(Peek):
+    def __init__(self, x):
+        super(Lexer, self).__init__(x)
+
+    def check(self, tag):
+        got = self.peek().tag
+        return got == tag
+
+    def eat(self, tag):
+        p = self.check(tag)
+        if p:
+            next(self)
+        return p
+
+    def expect(self, tag):
+        got = self.peek().tag
+        if not self.eat(tag):
+            raise ExpectFailure(expected=tag, got=got)
 
 
 SINGLE_PUNCTUATION = "()[]{},.;:#"
@@ -144,15 +167,15 @@ def lexer_(text):
                 while head.peek().isalnum() or head.peek() in "_-":
                     next(head)
 
+                if head.peek() in "!?#":
+                    next(head)
+
                 if head.peek() == ":":
                     next(head)
 
                     yield Token(tag=TokenTag.Keyword, start=here, end=head.pos)
 
                     continue
-
-                if head.peek() in "!?'":
-                    next(head)
 
                 word = text[here : head.pos]
                 tag = TokenTag.Identifier if word not in TokenTag else TokenTag(word)
@@ -178,53 +201,26 @@ def lexer_(text):
 
 
 def lexer(text):
-    return Peek(lexer_(text))
+    return Lexer(lexer_(text))
 
 
-def the(tag):
-    def w(l):
-        if l.peek().tag == tag:
-            return next(l)
-
-    return w
-
-
-def oneof(tags):
-    def w(l):
-        if l.peek().tag in tags:
-            return next(l)
-
-    return w
+def p_unary0(lexer):
+    p = []
+    while lexer.check(TokenTag.Identifier):
+        p.append(lexer.peek().payload)
+        next(lexer)
+    return {"type": "import", "path": p}
 
 
-def join(inners):
-    def w(l):
-        r = []
-        for i in inners:
-            x = i(l)
-            if x is None:
-                return None
-            r.append(x)
-        return r
-
-    return w
-
-
-def either(inners):
-    def w(l):
-        for i in inners:
-            x = i(l)
-            if x is not None:
-                return x
-
-    return w
+def p_import(lexer):
+    path = p_unary0(lexer)
+    lexer.expect(TokenTag.Dot)
+    return path
 
 
 def p_toplevel(lexer):
-    [_, name, _] = join(
-        [the(TokenTag.KImport), the(TokenTag.Identifier), the(TokenTag.Dot)]
-    )(lexer)
-    print(name)
+    if lexer.eat(TokenTag.KImport):
+        return p_import(lexer)
 
 
 text = """
@@ -232,4 +228,5 @@ import this.
 """
 
 l = lexer(text)
-p_toplevel(l)
+a = p_toplevel(l)
+print(a)
