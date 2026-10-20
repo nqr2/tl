@@ -26,9 +26,13 @@ class Peek:
 
 
 @dataclass
-class ExpectFailure:
+class ExpectFailure(Exception):
     expected: TokenTag
     got: TokenTag
+    span: (int, int)
+
+    def __str__(self):
+        return f"at {self.span} expected {self.expected}, got {self.got}"
 
 
 class Lexer(Peek):
@@ -46,13 +50,14 @@ class Lexer(Peek):
         return p
 
     def expect(self, tag):
-        got = self.peek().tag
+        got = self.peek()
         if not self.eat(tag):
-            raise ExpectFailure(expected=tag, got=got)
+            raise ExpectFailure(span=(got.start, got.end), expected=tag, got=got.tag)
+        return got
 
 
 SINGLE_PUNCTUATION = "()[]{},.;:#"
-PUNCTUATION = "?!+-&/%$@^<>*"
+PUNCTUATION = "?!+-&/%$@^<>*="
 
 
 def lexer_(text):
@@ -144,7 +149,7 @@ def lexer_(text):
             s = next(head)
             yield Token(tag=TokenTag.Unknown, start=here, end=head.pos, payload=s)
     except StopIteration:
-        yield Token(tag=TokenTag.Eof,start=0,end=0,payload='')
+        yield Token(tag=TokenTag.Eof, start=0, end=0, payload="")
 
 
 def lexer(text):

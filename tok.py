@@ -41,6 +41,7 @@ TokenTag = Enum(
         ("KAnd", "and"),
         ("KThen", "then"),
         ("KAs", "as"),
+        ("KPass", "pass"),
         ("Unknown", "<unknown>"),
     ],
 )
