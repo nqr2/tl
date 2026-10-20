@@ -41,6 +41,10 @@ class Lexer(Peek):
 
     def check(self, tag):
         got = self.peek().tag
+
+        if type(tag) is set:
+            return got in tag
+
         return got == tag
 
     def eat(self, tag):
@@ -125,7 +129,12 @@ def lexer_(text):
                 if head.peek() == ":":
                     next(head)
 
-                    yield Token(tag=TokenTag.Keyword, start=here, end=head.pos)
+                    yield Token(
+                        tag=TokenTag.Keyword,
+                        start=here,
+                        end=head.pos,
+                        payload=text[here : head.pos],
+                    )
 
                     continue
 
