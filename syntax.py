@@ -102,3 +102,39 @@ class Expr_Pass:
 class Expr_Paren:
     units: [Expr]
     tail: Expr
+
+
+@dataclass
+class Matchcase_e:
+    parts: [str]
+    arguments: [(str, Type)]
+    value: Expr
+
+
+@dataclass
+class Expr_Match:
+    discriminated: Expr
+    cases: [Matchcase_e]
+
+
+@dataclass
+class Expr_SendKw:
+    recv: Expr
+    parts: [str]
+    args: [Expr]
+    andq: bool = False
+
+
+@dataclass
+class Expr_SendU:
+    recv: Expr
+    op: str
+    andq: bool = False
+
+
+@dataclass
+class Expr_SendBin:
+    recv: Expr
+    op: str
+    rhs: Expr
+    andq: bool = False
