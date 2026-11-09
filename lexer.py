@@ -64,7 +64,7 @@ SINGLE_PUNCTUATION = "()[]{},.;:#"
 PUNCTUATION = "?!+-&/%$@^<>*="
 
 
-def lexer_(text):
+def lexer_(text, skip_comments=True):
     head = Peek(iter(text))
 
     try:
@@ -91,9 +91,11 @@ def lexer_(text):
 
                 word = text[here : head.pos]
 
-                yield Token(
-                    tag=TokenTag.Comment, start=here, end=head.pos, payload=word
-                )
+                if not skip_comments:
+                    yield Token(
+                        tag=TokenTag.Comment, start=here, end=head.pos, payload=word
+                    )
+
                 continue
 
             if head.peek() == "'":

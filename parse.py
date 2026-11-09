@@ -19,7 +19,6 @@ def p_import(lexer):
 #      | 'pass'
 #      | '(' expr { '.' expr } ')'
 #      | 'identifier'
-#      .
 def p_expr(lexer):
     if lexer.check(TokenTag.Int):
         n = int(lexer.expect(TokenTag.Int).payload)
@@ -44,17 +43,112 @@ def p_expr(lexer):
         return syntax.Expr_Paren(units, tail)
 
 
-# definition = msgdef | vardef.
 # vardef = 'var' 'identifier' '=' expression.
-# msgdef = 'identifier' '=' expression.
-#        | { 'keyword' 'identifier' } '=' expression
-def p_definition(lexer):
-    if lexer.eat(TokenTag.KVar):
-        name = lexer.expect(TokenTag.Identifier).payload
-        lexer.expect(TokenTag.Equal)
-        value = p_expr(lexer)
+def p_vardef(lexer):
+    name = lexer.expect(TokenTag.Identifier).payload
+    lexer.expect(TokenTag.Equal)
+    value = p_expr(lexer)
 
-        return syntax.VariableDefinition(name, value)
+    return syntax.VariableDefinition(name, value)
+
+
+# ty(usage-side) = identifier.
+def p_ty(lexer):
+    if lexer.check(TokenTag.Identifier):
+        name = lexer.expect(TokenTag.Identifier).payload
+        return syntax.Type_Named(name)
+
+    return None
+
+
+# tycase = 'identifier'
+#        | {keyword ty}
+def p_tycase(lexer):
+    if lexer.check(TokenTag.Identifier):
+        name = lexer.expect(TokenTag.Identifier).payload
+        return syntax.Matchcase_ty(parts=[name], arguments=[])
+
+    parts = []
+    arguments = []
+
+    while lexer.check(TokenTag.Keyword):
+        part = lexer.expect(TokenTag.Keyword).payload[:-1]
+        arg = p_ty(lexer)
+
+        parts.append(part)
+        arguments.append(arg)
+
+    return syntax.Matchcase_ty(parts, arguments)
+
+
+# ty(definition-side) = ty(usage-side)
+#                     | 'match' { case ,}
+#                     | '{' {mem...} '}'
+def p_tyd(lexer):
+    defl = p_ty(lexer)
+    if defl is not None:
+        return defl
+
+    if lexer.eat(TokenTag.KMatch):
+        cases = []
+
+        cases.append(p_tycase(lexer))
+
+        while lexer.eat(TokenTag.Comma):
+            cases.append(p_tycase(lexer))
+
+        return syntax.Type_Match(cases)
+
+    if lexer.eat(TokenTag.LCurl):
+        rows = []
+
+        if not lexer.check(TokenTag.RCurl):
+            k = lexer.expect(TokenTag.Identifier).payload
+            v = p_ty(lexer)
+            rows.append(syntax.RowMember(k, v))
+
+            while lexer.eat(TokenTag.Comma):
+                k = lexer.expect(TokenTag.Identifier).payload
+                v = p_ty(lexer)
+                rows.append(syntax.RowMember(k, v))
+
+        lexer.expect(TokenTag.RCurl)
+        return syntax.Type_Row(rows)
+
+    return None
+
+
+# tydef = 'type' identifier '=' ty(definition-side)
+def p_tydef(lexer):
+    name = lexer.expect(TokenTag.Identifier).payload
+    lexer.expect(TokenTag.Equal)
+    value = p_tyd(lexer)
+
+    return syntax.TypeDefinition(name, value)
+
+
+# arg = identifier [type]
+def p_arg(lexer):
+    name = lexer.expect(TokenTag.Identifier).payload
+    ty = p_ty(lexer)
+    return syntax.Argument(name, ty=None)
+
+
+def p_recv(lexer):
+    lexer.expect(TokenTag.LParen)
+    recv = p_arg(lexer)
+    lexer.expect(TokenTag.RParen)
+    return recv
+
+
+# fndef = 'fn' [recv] identifier' ['(' {argument} ')'] [-> ty]  '=' expression.
+#       | 'fn' [recv] { 'keyword' 'identifier' } [-> ty] '=' expression
+def p_fndef(lexer):
+    recv = None
+    ret = None
+
+    if lexer.check(TokenTag.LParen):
+        recv = p_recv(lexer)
 
     if lexer.check(TokenTag.Keyword):
         name = []
@@ -63,32 +157,75 @@ def p_definition(lexer):
         while lexer.check(TokenTag.Keyword):
             name.append(lexer.expect(TokenTag.Keyword).payload[:-1])
 
-            arg_name = lexer.expect(TokenTag.Identifier).payload
-            args.append(syntax.Argument(name=arg_name))
+            arg = None
+
+            if lexer.eat(TokenTag.LParen):
+                arg = p_arg(lexer)
+                lexer.expect(TokenTag.RParen)
+            elif lexer.check(TokenTag.Identifier):
+                arg_name = lexer.expect(TokenTag.Identifier).payload
+                arg = syntax.Argument(name=arg_name)
+
+            args.append(arg)
+
+        if lexer.eat(TokenTag.RArrow):
+            ret = p_ty(lexer)
 
         lexer.expect(TokenTag.Equal)
         value = p_expr(lexer)
 
         return syntax.MessageDefinition(
-            message=syntax.MessageName_N(parts=name), arguments=args, value=value
+            receiver=recv,
+            message=syntax.MessageName_N(parts=name),
+            arguments=args,
+            returns=ret,
+            value=value,
         )
 
     name = lexer.expect(TokenTag.Identifier).payload
+    arguments = None
+
+    if lexer.eat(TokenTag.LParen):
+        arguments = []
+
+        if not lexer.check(TokenTag.RParen):
+            arguments.append(p_arg(lexer))
+
+            while not lexer.check(TokenTag.RParen):
+                lexer.expect(TokenTag.Comma)
+
+                arguments.append(p_arg(lexer))
+
+        lexer.expect(TokenTag.RParen)
+
+    if lexer.eat(TokenTag.RArrow):
+        ret = p_ty(lexer)
+
     lexer.expect(TokenTag.Equal)
     value = p_expr(lexer)
 
     return syntax.MessageDefinition(
-        message=syntax.MessageName_1(name), arguments=[], value=value
+        receiver=recv,
+        message=syntax.MessageName_1(name),
+        arguments=arguments,
+        returns=ret,
+        value=value,
     )
 
 
-# toplevel = import | definition.
+# toplevel = import | fndef | vardef.| tydef
 def p_toplevel(lexer):
     if lexer.eat(TokenTag.KImport):
         return p_import(lexer)
 
-    if not lexer.check(TokenTag.Eof):
-        return p_definition(lexer)
+    if lexer.eat(TokenTag.KVar):
+        return p_vardef(lexer)
+
+    if lexer.eat(TokenTag.KFn):
+        return p_fndef(lexer)
+
+    if lexer.eat(TokenTag.KType):
+        return p_tydef(lexer)
 
     lexer.expect(TokenTag.Eof)
 

@@ -24,20 +24,59 @@ class Import:
 @dataclass
 class Argument:
     name: str
-    ty: any = None  # TODO
+    ty: Type = None  # TODO
 
 
 @dataclass
 class MessageDefinition:
+    receiver: (str, Type)
     message: MessageName
-    arguments: [str]
+    arguments: [Argument]
+    returns: Type
     value: Expr
+
+
+class Type:
+    pass
+
+
+@dataclass
+class Type_Named:
+    name: str
 
 
 @dataclass
 class VariableDefinition:
     name: str
     value: Expr
+
+
+@dataclass
+class TypeDefinition:
+    name: str
+    value: Type
+
+
+@dataclass
+class Matchcase_ty:
+    parts: [str]
+    arguments: [Type]
+
+
+@dataclass
+class Type_Match:
+    cases: [Matchcase_ty]
+
+
+@dataclass
+class RowMember:
+    name: str
+    ty: Type
+
+
+@dataclass
+class Type_Row:
+    rows: [RowMember]
 
 
 class Expr:
