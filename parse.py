@@ -92,6 +92,22 @@ def p_eprim_nc(lexer):
         name = lexer.expect(TokenTag.Identifier).payload
         return syntax.Expr_Variable(name)
 
+    if lexer.eat(TokenTag.Hash):
+        recv = None
+        parts = []
+
+        if lexer.eat(TokenTag.LParen):
+            recv = p_ty(lexer)
+            lexer.expect(TokenTag.RParen)
+
+        if lexer.check({TokenTag.Identifier, TokenTag.Operator}):
+          parts = [lexer.expect({TokenTag.Identifier, TokenTag.Operator}).payload]
+        else:
+            while lexer.check(TokenTag.Keyword):
+                parts.append(lexer.expect(TokenTag.Keyword).payload)
+
+        return syntax.Expr_MsgRef(recv, parts)
+
     if lexer.eat(TokenTag.LCurl):
 
         def l_rrow(l):

@@ -36,3 +36,11 @@ fn (self char) newline? -> bool =
 
 fn (self char) nul? -> bool =
     self == `\x00`.
+
+fn tauto(_ char)->bool = true.
+
+fn predicate_off(the bool) -> fn(char)->bool =
+    match the with
+        True  = #(char)newline?,  " #(receiver type) message "
+        False = #tauto.           " #message "
+        "since we don't have overloading just the name works"

@@ -176,6 +176,10 @@ class Expr_Char:
 class Expr_Flt:
     inner: float
 
+@dataclass
+class Expr_MsgRef:
+    recv: Maybe[Type]
+    parts:[str]
 
 @dataclass
 class Expr_Set:
