@@ -214,8 +214,12 @@ def p_expr(lexer):
     if lexer.eat(TokenTag.KMatch):
         return p_ematch(lexer)
 
+    if lexer.eat(TokenTag.At):
+        inner = p_expr(lexer)
+        return syntax.Expr_Load(inner)
+
     if lexer.eat(TokenTag.KSet):
-        lv = p_kwsend(lexer)
+        lv = p_expr(lexer)
         lexer.expect(TokenTag.Equal)
         rv = p_expr(lexer)
         return syntax.Expr_Set(lv, rv)
@@ -249,11 +253,30 @@ def p_vardef(lexer):
     return syntax.VariableDefinition(name, value)
 
 
-# ty(usage-side) = identifier.
+# ty(usage-side) = identifier | fn(args...) [-> ty]
 def p_ty(lexer):
+    if lexer.eat(TokenTag.At):
+        inner = p_ty(lexer)
+        return syntax.Type_Ptr(inner)
+
     if lexer.check(TokenTag.Identifier):
         name = lexer.expect(TokenTag.Identifier).payload
         return syntax.Type_Named(name)
+
+    if lexer.eat(TokenTag.KFn):
+        args = []
+        ret = None
+
+        if lexer.eat(TokenTag.LParen):
+            if not lexer.eat(TokenTag.RParen):
+                args.append(p_ty(lexer))
+                while lexer.eat(TokenTag.Comma):
+                    args.append(p_ty(lexer))
+            lexer.expect(TokenTag.RParen)
+
+        if lexer.eat(TokenTag.RArrow):
+            ret = p_ty(lexer)
+        return syntax.Type_Fn(args,ret)
 
     return None
 

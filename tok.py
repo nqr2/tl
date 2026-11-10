@@ -19,6 +19,7 @@ TokenTag = Enum(
         ("RCurl", "}"),
         ("Hash", "#"),
         ("Comma", ","),
+        ("At", "@"),
         ("Semicolon", ";"),
         ("Colon", ":"),
         ("Dot", "."),

@@ -60,8 +60,8 @@ class Lexer(Peek):
         return got
 
 
-SINGLE_PUNCTUATION = "()[]{},.;:#"
-PUNCTUATION = "?!+-&/%$@^<>*=|"
+SINGLE_PUNCTUATION = "()[]{},.;:#@"
+PUNCTUATION = "?!+-&/%$^<>*=|"
 
 
 def lexer_(text, skip_comments=True):

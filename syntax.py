@@ -121,6 +121,14 @@ class RowMember:
 class Type_Row:
     rows: [RowMember]
 
+@dataclass
+class Type_Fn:
+    args:[Type]
+    ret:Type
+
+@dataclass
+class Type_Ptr:
+    inner:Type
 
 class Expr:
     pass
@@ -140,6 +148,9 @@ class Expr_Int:
 class Expr_Pass:
     pass
 
+@dataclass
+class Expr_Load:
+    inner: Expr
 
 @dataclass
 class Expr_Set:
