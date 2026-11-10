@@ -53,7 +53,6 @@ class Expr_Do:
 @dataclass
 class MessageDefinition:
     receiver: (str, Type)
-    generics: [str]
     message: MessageName
     arguments: [Argument]
     returns: Type

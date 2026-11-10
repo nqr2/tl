@@ -53,7 +53,7 @@ module Option(type T) = {
 type Bool = match False, True.
 
 "yippie?"
-fn generic(T) (b Bool) if: (t T) else: (f T) -> T =
+fn (b Bool) if: (t T) else: (f T) -> T =
   match b with
     False = f,
     True = t.
@@ -83,7 +83,7 @@ fn halt = do True while: do pass.
 "
 type (T) lazy = fn() -> T.
 
-fn generic(T) (c T lazy) force -> T = c().
+fn (c T lazy) force -> T = c().
 
 fn (c Bool lazy) while: (body pass lazy) -> pass =
     match c force with

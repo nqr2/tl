@@ -1,6 +1,7 @@
 from tok import *
 import syntax
 
+
 # extends = 'extends' path
 def p_extends(lexer):
     p = []
@@ -357,17 +358,6 @@ def p_fndef(lexer):
     ret = None
     gens = []
 
-    if lexer.eat(TokenTag.KGeneric):
-        lexer.expect(TokenTag.LParen)
-
-        if not lexer.check(TokenTag.RParen):
-            gens.append(lexer.expect(TokenTag.Identifier).payload)
-
-            while lexer.eat(TokenTag.Comma):
-                gens.append(lexer.expect(TokenTag.Identifier).payload)
-
-        lexer.expect(TokenTag.RParen)
-
     if lexer.check(TokenTag.LParen):
         recv = p_recv(lexer)
 
@@ -397,7 +387,6 @@ def p_fndef(lexer):
 
         return syntax.MessageDefinition(
             receiver=recv,
-            generics=gens,
             message=syntax.MessageName_N(parts=name),
             arguments=args,
             returns=ret,
@@ -428,7 +417,6 @@ def p_fndef(lexer):
 
     return syntax.MessageDefinition(
         receiver=recv,
-        generics=gens,
         message=syntax.MessageName_1(name),
         arguments=arguments,
         returns=ret,
