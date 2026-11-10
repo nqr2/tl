@@ -106,8 +106,8 @@ fn rset(r &IntPair,
 
 fn ex = (
     var r = splat: 5.
-    rset(&r, &(r l)). "ewww, (r l) is ONLY for members, but that's not clear :("
-    rset(&r, #(IntPair)&l(r)) "eww, more sensible?, but quite gross"
+    rset(&r, &(r l)). ;;ewww, (r l) is ONLY for members, but that's not clear :(
+    rset(&r, #(IntPair)&l(r)) ;;eww, more sensible?, but quite gross
     r l
 ).
 "
