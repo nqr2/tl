@@ -14,7 +14,7 @@ fn (self lazy) force -> T = self().
 fn remote-set!(target @i32, source i32) =
     set @target = source.
 
-#[extern] decl puts(_ @u8).
+#[extern] decl puts(_ @const u8).
 
 fn example = (
     puts('hello, example!' as-bytes)

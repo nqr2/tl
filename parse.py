@@ -264,8 +264,9 @@ def p_vardef(lexer):
 # ty(usage-side) = identifier | fn(args...) [-> ty]
 def p_ty(lexer):
     if lexer.eat(TokenTag.At):
+        constq = lexer.eat(TokenTag.KConst)
         inner = p_ty(lexer)
-        return syntax.Type_Ptr(inner)
+        return syntax.Type_Ptr(constq, inner)
 
     if lexer.check(TokenTag.Identifier):
         name = lexer.expect(TokenTag.Identifier).payload
@@ -364,7 +365,7 @@ def p_arg(lexer):
     labelq = lexer.eat(TokenTag.KLabel)
     name = lexer.expect(TokenTag.Identifier).payload
     ty = p_ty(lexer)
-    return syntax.Argument(labelq=labelq, name=name, ty=None)
+    return syntax.Argument(labelq=labelq, name=name, ty=ty)
 
 
 def p_recv(lexer):

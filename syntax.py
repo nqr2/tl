@@ -134,6 +134,7 @@ class Type_Fn:
 
 @dataclass
 class Type_Ptr:
+    constq: bool
     inner: Type
 
 
