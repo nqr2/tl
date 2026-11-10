@@ -22,3 +22,6 @@ fn example = (
 
 fn (self char) is-newline -> bool =
     self == `N`.
+
+fn maybe = "maybe this works well enough? who knows"
+    Option(pass) Some: pass then unwrapOr: pass.

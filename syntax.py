@@ -243,7 +243,6 @@ class MArg_Mod:
 class MExpr_Struct:
     mems: [any]
 
-
 @dataclass
 class ModuleDefinition:
     name: str
