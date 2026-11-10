@@ -1,9 +1,6 @@
 from tok import *
 import syntax
 
-# TODO: ast defs
-
-
 # extends = 'extends' path
 def p_extends(lexer):
     p = []
