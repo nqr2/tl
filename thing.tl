@@ -19,3 +19,6 @@ fn remote-set!(target @i32, source i32) =
 fn example = (
     puts('hello, example!' as-bytes)
 ).
+
+fn (self char) is-newline -> bool =
+    self == `N` .

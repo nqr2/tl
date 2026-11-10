@@ -156,6 +156,11 @@ class Expr_Load:
 class Expr_Str:
     inner: str
 
+
+@dataclass
+class Expr_Char:
+    inner: str
+
 @dataclass
 class Expr_Set:
     lv: Expr

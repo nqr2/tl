@@ -98,6 +98,13 @@ def lexer_(text, skip_comments=True):
 
                 continue
 
+            if head.peek() == '`':
+                next(head)
+                w = next(head)
+                next(head)
+                yield Token(tag=TokenTag.Char, start=here, end=head.pos, payload=w)
+                continue
+
             if head.peek() == "'":
                 next(head)
 
