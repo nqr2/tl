@@ -25,3 +25,6 @@ fn (self char) is-newline -> bool =
 
 fn maybe = "maybe this works well enough? who knows"
     Option(pass) Some: pass then unwrapOr: pass.
+
+var PI = 3.14592.
+var sixteen = 16r10.

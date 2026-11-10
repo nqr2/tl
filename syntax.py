@@ -171,6 +171,9 @@ class Expr_Str:
 class Expr_Char:
     inner: str
 
+@dataclass
+class Expr_Flt:
+    inner:float
 
 @dataclass
 class Expr_Set:
