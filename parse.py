@@ -104,8 +104,6 @@ def p_eprim_nc(lexer):
 
     if lexer.eat(TokenTag.KFn):
         args = []
-        units = []
-        tail = None
 
         if lexer.eat(TokenTag.LParen):
             args.append(p_arg(lexer))
@@ -115,18 +113,8 @@ def p_eprim_nc(lexer):
 
             lexer.expect(TokenTag.RParen)
 
-        if lexer.eat(TokenTag.LCurl):
-            tail = p_expr(lexer)
-
-            while lexer.eat(TokenTag.Dot):
-                units.append(tail)
-                tail = p_expr(lexer)
-
-            lexer.expect(TokenTag.RCurl)
-        else:
-            tail = p_eprim(lexer)
-
-        return syntax.Expr_Lambda(args, units, tail)
+        tail = p_eprim(lexer)
+        return syntax.Expr_Lambda(args, [], tail)
 
     if lexer.eat(TokenTag.LParen):
         units = []
