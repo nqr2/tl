@@ -79,7 +79,7 @@ fn wontfail(by Bool) -> i32 =
 
 fn halt = do True while: do pass.
 
-"i'm NOT in the mood for writing a parser for this :("
+"i'm NOT in the mood to write a parser for this :("
 "
 type (T) lazy = fn() -> T.
 
@@ -94,3 +94,20 @@ fn (c Bool lazy) while: (body pass lazy) -> pass =
 fn splat: (x i32) -> IntPair = {l=x, r=x}.
 fn (y IntPair) unsplat -> i32 = y l + y r.
 fn fma(x, y, z) = x + y * z.
+
+"VERY blatant copy from Valen's group borrowing thing:
+ verdagon.dev/blog/valen-group-borrowing
+
+ TODO parsing..."
+"
+fn rset(r &IntPair,
+        v in r l
+) mut(v) = set v = 5.
+
+fn ex = (
+    var r = splat: 5.
+    rset(&r, &(r l)). "ewww, (r l) is ONLY for members, but that's not clear :("
+    rset(&r, #(IntPair)&l(r)) "eww, more sensible?, but quite gross"
+    r l
+).
+"
