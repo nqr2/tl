@@ -76,3 +76,17 @@ fn fail(from Bool, label to i32) -> i32 =
 fn wontfail(by Bool) -> i32 =
     label to i32 with
     fail(by, to).
+
+fn halt = do True while: do pass.
+
+"i'm NOT in the mood for writing a parser for this :("
+"
+type (T) lazy = fn() -> T.
+
+fn generic(T) (c T lazy) force -> T = c().
+
+fn (c Bool lazy) while: (body pass lazy) -> pass =
+    match c force with
+        True = (body force. c while: body),
+        False = pass.
+"

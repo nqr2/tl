@@ -44,6 +44,9 @@ class Expr_Call:
     recv: Expr
     args: [Expr]
 
+@dataclass
+class Expr_Do:
+    inner:Expr
 
 @dataclass
 class MessageDefinition:

@@ -70,6 +70,10 @@ def p_ematch(lexer):
 
 
 def p_eprim_nc(lexer):
+    if lexer.eat(TokenTag.KDo):
+        inner = p_eprim_nc(lexer)
+        return syntax.Expr_Do(inner)
+
     if lexer.check(TokenTag.Int):
         n = int(lexer.expect(TokenTag.Int).payload)
         return syntax.Expr_Int(n)

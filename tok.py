@@ -42,6 +42,7 @@ TokenTag = Enum(
         ("KAs", "as"),
         ("KPass", "pass"),
         ("KFn", "fn"),
+        ("KDo", "do"),
         ("KGeneric", "generic"),
         ("KExtends", "extends"),
         ("Unknown", "<unknown>"),
