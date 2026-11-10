@@ -79,21 +79,14 @@ fn wontfail(by Bool) -> i32 =
 
 fn halt = do True while: do pass.
 
-"i'm NOT in the mood to write a parser for this :("
-"
-type (T) lazy = fn() -> T.
-
-fn (c T lazy) force -> T = c().
-
-fn (c Bool lazy) while: (body pass lazy) -> pass =
-    match c force with
-        True = (body force. c while: body),
-        False = pass.
-"
-
 fn splat: (x i32) -> IntPair = {l=x, r=x}.
 fn (y IntPair) unsplat -> i32 = y l + y r.
 fn fma(x, y, z) = x + y * z.
 
 #[extern]
 decl (x f32) sin -> f32.
+
+module type Insert(type V) = {
+    type t.
+    decl (self t) insert(v: V).
+}.
