@@ -88,5 +88,5 @@ decl (x f32) sin -> f32.
 
 module type Insert(type V) = {
     type t.
-    decl (self t) insert(v: V).
+    decl (self t) insert(v V)
 }.

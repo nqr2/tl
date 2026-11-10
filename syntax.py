@@ -86,12 +86,19 @@ class VariableDefinition:
     name: str
     value: Expr
 
+@dataclass
+class VariableDeclaration:
+    name: str
 
 @dataclass
 class TypeDefinition:
     name: str
     value: Type
 
+
+@dataclass
+class TypeAbstract:
+    name: str
 
 @dataclass
 class Matchcase_ty:
@@ -212,6 +219,11 @@ class ModuleDefinition:
     args: [any]
     value: MExpr
 
+@dataclass
+class SigDefinition:
+    name: str
+    args:[any]
+    value: MExpr
 
 @dataclass
 class Expr_Row:

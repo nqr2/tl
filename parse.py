@@ -328,8 +328,12 @@ def p_tyd(lexer):
 
 
 # tydef = 'type' identifier '=' ty(definition-side)
-def p_tydef(lexer):
+def p_tydef(lexer,indecl=False):
     name = lexer.expect(TokenTag.Identifier).payload
+
+    if indecl and not lexer.check(TokenTag.Equal):
+        return syntax.TypeAbstract(name)
+
     lexer.expect(TokenTag.Equal)
     value = p_tyd(lexer)
 
@@ -489,15 +493,15 @@ def p_fndef(lexer):
     )
 
 
-def p_mexpr(lexer):
+def p_mexpr(lexer,insig=False):
     if lexer.eat(TokenTag.LCurl):
         mems = []
 
         if not lexer.check(TokenTag.RCurl):
-            mems.append(p_toplevel(lexer))
+            mems.append(p_toplevel(lexer,insig))
 
             while lexer.eat(TokenTag.Dot):
-                mems.append(p_toplevel(lexer))
+                mems.append(p_toplevel(lexer,insig))
 
         lexer.expect(TokenTag.RCurl)
         return syntax.MExpr_Struct(mems)
@@ -514,6 +518,11 @@ def p_marg(lexer):
 
 def p_mdef(lexer):
     args = []
+    in_sig=False
+
+    if lexer.eat(TokenTag.KType):
+        in_sig=True
+
     name = lexer.expect(TokenTag.Identifier).payload
 
     if lexer.eat(TokenTag.LParen):
@@ -526,10 +535,12 @@ def p_mdef(lexer):
         lexer.expect(TokenTag.RParen)
 
     lexer.expect(TokenTag.Equal)
-    value = p_mexpr(lexer)
+    value = p_mexpr(lexer,in_sig)
+
+    if in_sig:
+        return syntax.SigDefinition(name, args, value)
 
     return syntax.ModuleDefinition(name, args, value)
-
 
 def p_attrs(lexer):
     # attr = identifier
@@ -548,7 +559,7 @@ def p_attrs(lexer):
     return a
 
 # toplevel = import | fndecl | fndef | vardef.| tydef | mdef | attrs toplevel
-def p_toplevel(lexer):
+def p_toplevel(lexer,insig=False):
     if lexer.eat(TokenTag.Hash):
         attr = p_attrs(lexer)
         inner = p_toplevel(lexer)
@@ -570,7 +581,7 @@ def p_toplevel(lexer):
         return p_fndef(lexer)
 
     if lexer.eat(TokenTag.KType):
-        return p_tydef(lexer)
+        return p_tydef(lexer,insig)
 
     if lexer.eat(TokenTag.KModule):
         return p_mdef(lexer)
