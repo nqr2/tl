@@ -28,8 +28,21 @@ class Extends:
 
 @dataclass
 class Argument:
+    labelq: bool
     name: str
     ty: Type = None  # TODO
+
+
+@dataclass
+class Expr_Break:
+    label: str
+    val: Expr = None
+
+
+@dataclass
+class Expr_Call:
+    recv: Expr
+    args: [Expr]
 
 
 @dataclass
@@ -108,6 +121,19 @@ class Expr_Pass:
 class Expr_Set:
     lv: Expr
     rv: Expr
+
+
+@dataclass
+class Expr_As:
+    rv: Expr
+    ty: Type
+
+
+@dataclass
+class Expr_Label:
+    n: str
+    t: Type
+    v: Expr
 
 
 @dataclass

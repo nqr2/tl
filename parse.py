@@ -44,7 +44,7 @@ def p_emcase(lexer):
                 lexer.expect(TokenTag.RParen)
             elif lexer.check(TokenTag.Identifier):
                 arg_name = lexer.expect(TokenTag.Identifier).payload
-                arg = syntax.Argument(name=arg_name)
+                arg = syntax.Argument(labelq=False, name=arg_name)
 
             parts.append(p)
             arguments.append(a)
@@ -69,7 +69,7 @@ def p_ematch(lexer):
     return syntax.Expr_Match(discr, cases)
 
 
-def p_eprim(lexer):
+def p_eprim_nc(lexer):
     if lexer.check(TokenTag.Int):
         n = int(lexer.expect(TokenTag.Int).payload)
         return syntax.Expr_Int(n)
@@ -117,6 +117,28 @@ def p_eprim(lexer):
 
         lexer.expect(TokenTag.RParen)
         return syntax.Expr_Paren(units, tail)
+
+
+def p_eprim(lexer):
+    p = p_eprim_nc(lexer)
+
+    while lexer.eat(TokenTag.LParen):
+        args = []
+
+        if not lexer.check(TokenTag.RParen):
+            args.append(p_eprim(lexer))
+
+            while lexer.eat(TokenTag.Comma):
+                args.append(p_eprim(lexer))
+
+        lexer.expect(TokenTag.RParen)
+        p = syntax.Expr_Call(p, args)
+
+    while lexer.eat(TokenTag.KAs):
+        t = p_ty(lexer)
+        p = syntax.Expr_As(p, t)
+
+    return p
 
 
 def p_usend(lexer, recv=None, andq=False):
@@ -188,6 +210,25 @@ def p_expr(lexer):
         lexer.expect(TokenTag.Equal)
         rv = p_expr(lexer)
         return syntax.Expr_Set(lv, rv)
+
+    if lexer.eat(TokenTag.KLabel):
+        name = lexer.expect(TokenTag.Identifier).payload
+        ty = p_ty(lexer)
+
+        if ty is not None:
+            lexer.expect(TokenTag.KWith)
+
+        v = p_expr(lexer)
+        return syntax.Expr_Label(name, ty, v)
+
+    if lexer.eat(TokenTag.KBreak):
+        name = lexer.expect(TokenTag.Identifier).payload
+        v = None
+
+        if lexer.eat(TokenTag.KWith):
+            v = p_expr(lexer)
+
+        return syntax.Expr_Break(name, v)
 
 
 # vardef = 'var' 'identifier' '=' expression.
@@ -276,9 +317,10 @@ def p_tydef(lexer):
 
 # arg = identifier [type]
 def p_arg(lexer):
+    labelq = lexer.eat(TokenTag.KLabel)
     name = lexer.expect(TokenTag.Identifier).payload
     ty = p_ty(lexer)
-    return syntax.Argument(name, ty=None)
+    return syntax.Argument(labelq=labelq, name=name, ty=None)
 
 
 def p_recv(lexer):
@@ -323,7 +365,7 @@ def p_fndef(lexer):
                 lexer.expect(TokenTag.RParen)
             elif lexer.check(TokenTag.Identifier):
                 arg_name = lexer.expect(TokenTag.Identifier).payload
-                arg = syntax.Argument(name=arg_name)
+                arg = syntax.Argument(labelq=False, name=arg_name)
 
             args.append(arg)
 

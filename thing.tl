@@ -62,8 +62,17 @@ fn fact(x i32) -> i32 = (
     var result = 1.
 
     (1 to: x) each: fn(i) {
-        set result = result * i
+        set result = result * i as i32
     }.
 
     result
 ).
+
+fn fail(from Bool, label to i32) -> i32 =
+    match from with
+        False = break to with 0,
+        True = break to with 1.
+
+fn wontfail(by Bool) -> i32 =
+    label to i32 with
+    fail(by, to).
