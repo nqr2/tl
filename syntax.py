@@ -44,9 +44,11 @@ class Expr_Call:
     recv: Expr
     args: [Expr]
 
+
 @dataclass
 class Expr_Do:
-    inner:Expr
+    inner: Expr
+
 
 @dataclass
 class MessageDefinition:
@@ -197,6 +199,11 @@ class ModuleDefinition:
     name: str
     args: [any]
     value: MExpr
+
+
+@dataclass
+class Expr_Row:
+    rows: [(str, Expr)]
 
 
 @dataclass

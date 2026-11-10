@@ -82,6 +82,25 @@ def p_eprim_nc(lexer):
         name = lexer.expect(TokenTag.Identifier).payload
         return syntax.Expr_Variable(name)
 
+    if lexer.eat(TokenTag.LCurl):
+
+        def l_rrow(l):
+            k = l.expect(TokenTag.Identifier).payload
+            l.expect(TokenTag.Equal)
+            v = p_expr(l)
+            return (k, v)
+
+        rows = []
+
+        if not lexer.check(TokenTag.RCurl):
+            rows.append(l_rrow(lexer))
+
+            while lexer.eat(TokenTag.Comma):
+                rows.append(l_rrow(lexer))
+
+        lexer.expect(TokenTag.RCurl)
+        return syntax.Expr_Row(rows)
+
     if lexer.eat(TokenTag.KPass):
         return syntax.Expr_Pass()
 
@@ -148,9 +167,9 @@ def p_eprim(lexer):
 def p_usend(lexer, recv=None, andq=False):
     recv = recv or p_eprim(lexer)
 
-    if lexer.check(TokenTag.Identifier):
+    while lexer.check(TokenTag.Identifier):
         op = lexer.expect(TokenTag.Identifier).payload
-        return syntax.Expr_SendU(recv, op, andq)
+        recv = syntax.Expr_SendU(recv, op, andq)
 
     return recv
 
@@ -158,11 +177,11 @@ def p_usend(lexer, recv=None, andq=False):
 def p_binsend(lexer, recv=None, andq=False):
     recv = recv or p_usend(lexer, recv, andq)
 
-    if lexer.check(TokenTag.Operator):
+    while lexer.check(TokenTag.Operator):
         op = lexer.expect(TokenTag.Operator).payload
         rhs = p_usend(lexer)
 
-        return syntax.Expr_SendBin(recv, op, rhs, andq)
+        recv = syntax.Expr_SendBin(recv, op, rhs, andq)
 
     return recv
 
