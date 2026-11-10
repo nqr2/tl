@@ -517,6 +517,19 @@ def p_marg(lexer):
 
 
 def p_mdef(lexer):
+    if lexer.eat(TokenTag.LParen):
+        args = []
+
+        if not lexer.check(TokenTag.RParen):
+            args.append(p_marg(lexer))
+
+            while lexer.eat(TokenTag.Comma):
+                args.append(p_marg(lexer))
+
+        lexer.expect(TokenTag.RParen)
+
+        return syntax.ModuleParams(args)
+
     args = []
     in_sig=False
 

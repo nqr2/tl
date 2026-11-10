@@ -90,3 +90,5 @@ module type Insert(type V) = {
     type t.
     decl (self t) insert(v V)
 }.
+
+module(type T).

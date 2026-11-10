@@ -220,6 +220,10 @@ class ModuleDefinition:
     value: MExpr
 
 @dataclass
+class ModuleParams:
+    params:[any]
+
+@dataclass
 class SigDefinition:
     name: str
     args:[any]
