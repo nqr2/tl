@@ -30,3 +30,9 @@ var PI = 3.14592.
 var sixteen = 16r10.
 var fifteen = 2r1111.
 var million = 1.0e6.
+
+fn (self char) newline? -> bool =
+    self == `\n`.
+
+fn (self char) nul? -> bool =
+    self == `\x00`.

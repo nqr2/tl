@@ -70,6 +70,23 @@ SINGLE_PUNCTUATION = "()[]{},.;:#@"
 PUNCTUATION = "?!+-&/%$^<>*=|"
 
 
+def lchr_(head, tail):
+    T = {"\\": "\\", "n": "\n", "t": "\t", '"': '"', "'": "'", "`": "`"}
+
+    if head.peek() == "\\":
+        next(head)
+
+        if head.peek() in T:
+            return T[next(head)]
+
+        if head.peek() == "x":
+            next(head)
+            hx = next(head) + next(head)
+            return chr(int(hx, 16))
+
+    return next(head)
+
+
 def lexer_(text, skip_comments=True):
     head = Peek(iter(text))
 
@@ -91,7 +108,7 @@ def lexer_(text, skip_comments=True):
                 next(head)
 
                 while head.peek() != '"':
-                    next(head)
+                    lchr_(head, '"')
 
                 next(head)
 
@@ -106,22 +123,21 @@ def lexer_(text, skip_comments=True):
 
             if head.peek() == "`":
                 next(head)
-                w = next(head)
+                w = lchr_(head, "`")
                 next(head)
                 yield Token(tag=TokenTag.Char, start=here, end=head.pos, payload=w)
                 continue
 
             if head.peek() == "'":
                 next(head)
+                st = ""
 
                 while head.peek() != "'":
-                    next(head)
+                    st += lchr_(head, "'")
 
                 next(head)
 
-                word = text[here : head.pos]
-
-                yield Token(tag=TokenTag.String, start=here, end=head.pos, payload=word)
+                yield Token(tag=TokenTag.String, start=here, end=head.pos, payload=st)
                 continue
 
             if head.peek() in PUNCTUATION:
