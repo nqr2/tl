@@ -4,6 +4,17 @@ import syntax
 # TODO: ast defs
 
 
+# extends = 'extends' path
+def p_extends(lexer):
+    p = []
+
+    while lexer.check(TokenTag.Identifier):
+        p.append(lexer.peek().payload)
+        next(lexer)
+
+    return syntax.Extends(path=p)
+
+
 # import = 'import' {'identifier'}
 def p_import(lexer):
     p = []
@@ -70,6 +81,32 @@ def p_eprim(lexer):
     if lexer.eat(TokenTag.KPass):
         return syntax.Expr_Pass()
 
+    if lexer.eat(TokenTag.KFn):
+        args = []
+        units = []
+        tail = None
+
+        if lexer.eat(TokenTag.LParen):
+            args.append(p_arg(lexer))
+
+            while lexer.eat(TokenTag.Comma):
+                args.append(p_arg(lexer))
+
+            lexer.expect(TokenTag.RParen)
+
+        if lexer.eat(TokenTag.LCurl):
+            tail = p_expr(lexer)
+
+            while lexer.eat(TokenTag.Dot):
+                units.append(tail)
+                tail = p_expr(lexer)
+
+            lexer.expect(TokenTag.RCurl)
+        else:
+            tail = p_eprim(lexer)
+
+        return syntax.Expr_Lambda(args, units, tail)
+
     if lexer.eat(TokenTag.LParen):
         units = []
         tail = p_expr(lexer)
@@ -87,7 +124,7 @@ def p_usend(lexer, recv=None, andq=False):
 
     if lexer.check(TokenTag.Identifier):
         op = lexer.expect(TokenTag.Identifier).payload
-        return syntax.SendU(recv, op, andq)
+        return syntax.Expr_SendU(recv, op, andq)
 
     return recv
 
@@ -99,7 +136,7 @@ def p_binsend(lexer, recv=None, andq=False):
         op = lexer.expect(TokenTag.Operator).payload
         rhs = p_usend(lexer)
 
-        return syntax.SendBin(recv, op, rhs, andq)
+        return syntax.Expr_SendBin(recv, op, rhs, andq)
 
     return recv
 
@@ -140,8 +177,17 @@ def p_expr(lexer):
             return p2
         return p
 
+    if lexer.eat(TokenTag.KVar):
+        return p_vardef(lexer)
+
     if lexer.eat(TokenTag.KMatch):
         return p_ematch(lexer)
+
+    if lexer.eat(TokenTag.KSet):
+        lv = p_kwsend(lexer)
+        lexer.expect(TokenTag.Equal)
+        rv = p_expr(lexer)
+        return syntax.Expr_Set(lv, rv)
 
 
 # vardef = 'var' 'identifier' '=' expression.
@@ -242,11 +288,23 @@ def p_recv(lexer):
     return recv
 
 
-# fndef = 'fn' [recv] identifier' ['(' {argument} ')'] [-> ty]  '=' expression.
-#       | 'fn' [recv] { 'keyword' 'identifier' } [-> ty] '=' expression
+# fndef = 'fn' [gen] [recv] identifier' ['(' {argument} ')'] [-> ty]  '=' expression.
+#       | 'fn' [gen] [recv] { 'keyword' 'identifier' } [-> ty] '=' expression
 def p_fndef(lexer):
     recv = None
     ret = None
+    gens = []
+
+    if lexer.eat(TokenTag.KGeneric):
+        lexer.expect(TokenTag.LParen)
+
+        if not lexer.check(TokenTag.RParen):
+            gens.append(lexer.expect(TokenTag.Identifier).payload)
+
+            while lexer.eat(TokenTag.Comma):
+                gens.append(lexer.expect(TokenTag.Identifier).payload)
+
+        lexer.expect(TokenTag.RParen)
 
     if lexer.check(TokenTag.LParen):
         recv = p_recv(lexer)
@@ -277,6 +335,7 @@ def p_fndef(lexer):
 
         return syntax.MessageDefinition(
             receiver=recv,
+            generics=gens,
             message=syntax.MessageName_N(parts=name),
             arguments=args,
             returns=ret,
@@ -307,6 +366,7 @@ def p_fndef(lexer):
 
     return syntax.MessageDefinition(
         receiver=recv,
+        generics=gens,
         message=syntax.MessageName_1(name),
         arguments=arguments,
         returns=ret,
@@ -314,8 +374,53 @@ def p_fndef(lexer):
     )
 
 
-# toplevel = import | fndef | vardef.| tydef
+def p_mexpr(lexer):
+    if lexer.eat(TokenTag.LCurl):
+        mems = []
+
+        if not lexer.check(TokenTag.RCurl):
+            mems.append(p_toplevel(lexer))
+
+            while lexer.eat(TokenTag.Dot):
+                mems.append(p_toplevel(lexer))
+
+        lexer.expect(TokenTag.RCurl)
+        return syntax.MExpr_Struct(mems)
+
+
+def p_marg(lexer):
+    if lexer.eat(TokenTag.KType):
+        name = lexer.expect(TokenTag.Identifier).payload
+        return syntax.MArg_Ty(name)
+
+    name = lexer.expect(TokenTag.Identifier).payload
+    return syntax.MArg_Mod(name)
+
+
+def p_mdef(lexer):
+    args = []
+    name = lexer.expect(TokenTag.Identifier).payload
+
+    if lexer.eat(TokenTag.LParen):
+        if not lexer.check(TokenTag.RParen):
+            args.append(p_marg(lexer))
+
+            while lexer.eat(TokenTag.Comma):
+                args.append(p_marg(lexer))
+
+        lexer.expect(TokenTag.RParen)
+
+    lexer.expect(TokenTag.Equal)
+    value = p_mexpr(lexer)
+
+    return syntax.ModuleDefinition(name, args, value)
+
+
+# toplevel = import | fndef | vardef.| tydef | mdef
 def p_toplevel(lexer):
+    if lexer.eat(TokenTag.KExtends):
+        return p_extends(lexer)
+
     if lexer.eat(TokenTag.KImport):
         return p_import(lexer)
 
@@ -327,6 +432,9 @@ def p_toplevel(lexer):
 
     if lexer.eat(TokenTag.KType):
         return p_tydef(lexer)
+
+    if lexer.eat(TokenTag.KModule):
+        return p_mdef(lexer)
 
     lexer.expect(TokenTag.Eof)
 

@@ -28,3 +28,42 @@ fn (x MaybeInt) unwrapOr: (default i32) -> i32 =
         Some: x = x.
 
 var five = MaybeInt Some: 3 then unwrapOr: 0.
+
+"module stuff"
+
+module M = {
+    var x = 5
+}.
+
+import M.
+
+var mx = M x.
+
+module N = {
+    extends M.
+    var y = 6
+}.
+
+module Option(type T) = {
+    type t = match
+        None,
+        Some: T
+}.
+
+type Bool = match False, True.
+
+"yippie?"
+fn generic(T) (b Bool) if: (t T) else: (f T) -> T =
+  match b with
+    False = f,
+    True = t.
+
+fn fact(x i32) -> i32 = (
+    var result = 1.
+
+    (1 to: x) each: fn(i) {
+        set result = result * i
+    }.
+
+    result
+).

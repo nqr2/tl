@@ -22,6 +22,11 @@ class Import:
 
 
 @dataclass
+class Extends:
+    path: [str]
+
+
+@dataclass
 class Argument:
     name: str
     ty: Type = None  # TODO
@@ -30,6 +35,7 @@ class Argument:
 @dataclass
 class MessageDefinition:
     receiver: (str, Type)
+    generics: [str]
     message: MessageName
     arguments: [Argument]
     returns: Type
@@ -99,6 +105,19 @@ class Expr_Pass:
 
 
 @dataclass
+class Expr_Set:
+    lv: Expr
+    rv: Expr
+
+
+@dataclass
+class Expr_Lambda:
+    args: [Argument]
+    units: [Expr]
+    tail: Expr
+
+
+@dataclass
 class Expr_Paren:
     units: [Expr]
     tail: Expr
@@ -123,6 +142,32 @@ class Expr_SendKw:
     parts: [str]
     args: [Expr]
     andq: bool = False
+
+
+class MExpr:
+    pass
+
+
+@dataclass
+class MArg_Ty:
+    name: str
+
+
+@dataclass
+class MArg_Mod:
+    name: str
+
+
+@dataclass
+class MExpr_Struct:
+    mems: [any]
+
+
+@dataclass
+class ModuleDefinition:
+    name: str
+    args: [any]
+    value: MExpr
 
 
 @dataclass

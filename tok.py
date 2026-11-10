@@ -14,7 +14,6 @@ TokenTag = Enum(
         ("RBrac", "]"),
         ("Comment", "<comment>"),
         ("Equal", "="),
-        ("LArrow", "<-"),
         ("RArrow", "->"),
         ("LCurl", "{"),
         ("RCurl", "}"),
@@ -35,6 +34,7 @@ TokenTag = Enum(
         ("KExport", "export"),
         ("KMatch", "match"),
         ("KWith", "with"),
+        ("KSet", "set"),
         ("KLabel", "label"),
         ("KBreak", "break"),
         ("KAnd", "and"),
@@ -43,6 +43,7 @@ TokenTag = Enum(
         ("KPass", "pass"),
         ("KFn", "fn"),
         ("KGeneric", "generic"),
+        ("KExtends", "extends"),
         ("Unknown", "<unknown>"),
     ],
 )
