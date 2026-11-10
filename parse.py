@@ -351,6 +351,71 @@ def p_recv(lexer):
     return recv
 
 
+# fndef = 'decl' [recv] identifier' ['(' {argument} ')'] [-> ty]
+#       | 'decl' [recv] { 'keyword' 'identifier' } [-> ty]
+def p_fndecl(lexer):
+    recv = None
+    ret = None
+
+    if lexer.check(TokenTag.LParen):
+        recv = p_recv(lexer)
+
+    if lexer.check(TokenTag.Keyword):
+        name = []
+        args = []
+
+        while lexer.check(TokenTag.Keyword):
+            name.append(lexer.expect(TokenTag.Keyword).payload[:-1])
+
+            arg = None
+
+            if lexer.eat(TokenTag.LParen):
+                arg = p_arg(lexer)
+                lexer.expect(TokenTag.RParen)
+            elif lexer.check(TokenTag.Identifier):
+                arg_name = lexer.expect(TokenTag.Identifier).payload
+                arg = syntax.Argument(labelq=False, name=arg_name)
+
+            args.append(arg)
+
+        if lexer.eat(TokenTag.RArrow):
+            ret = p_ty(lexer)
+
+        return syntax.MessageDeclaration(
+            receiver=recv,
+            message=syntax.MessageName_N(parts=name),
+            arguments=args,
+            returns=ret,
+            value=value
+        )
+
+    name = lexer.expect(TokenTag.Identifier).payload
+    arguments = None
+
+    if lexer.eat(TokenTag.LParen):
+        arguments = []
+
+        if not lexer.check(TokenTag.RParen):
+            arguments.append(p_arg(lexer))
+
+            while not lexer.check(TokenTag.RParen):
+                lexer.expect(TokenTag.Comma)
+
+                arguments.append(p_arg(lexer))
+
+        lexer.expect(TokenTag.RParen)
+
+    if lexer.eat(TokenTag.RArrow):
+        ret = p_ty(lexer)
+
+    return syntax.MessageDeclaration(
+        receiver=recv,
+        message=syntax.MessageName_1(name),
+        arguments=arguments,
+        returns=ret
+    )
+
+
 # fndef = 'fn' [gen] [recv] identifier' ['(' {argument} ')'] [-> ty]  '=' expression.
 #       | 'fn' [gen] [recv] { 'keyword' 'identifier' } [-> ty] '=' expression
 def p_fndef(lexer):
@@ -466,13 +531,37 @@ def p_mdef(lexer):
     return syntax.ModuleDefinition(name, args, value)
 
 
-# toplevel = import | fndef | vardef.| tydef | mdef
+def p_attrs(lexer):
+    # attr = identifier
+    def attr(l):
+        return l.expect(TokenTag.Identifier).payload
+
+    a=[]
+    lexer.expect(TokenTag.LBrac)
+
+    if not lexer.check(TokenTag.RBrac):
+        a.append(attr(lexer))
+        while lexer.eat(TokenTag.Comma):
+            a.append(attr(lexer))
+
+    lexer.expect(TokenTag.RBrac)
+    return a
+
+# toplevel = import | fndecl | fndef | vardef.| tydef | mdef | attrs toplevel
 def p_toplevel(lexer):
+    if lexer.eat(TokenTag.Hash):
+        attr = p_attrs(lexer)
+        inner = p_toplevel(lexer)
+        return syntax.Attrlist(attr, inner)
+
     if lexer.eat(TokenTag.KExtends):
         return p_extends(lexer)
 
     if lexer.eat(TokenTag.KImport):
         return p_import(lexer)
+
+    if lexer.eat(TokenTag.KDecl):
+        return p_fndecl(lexer)
 
     if lexer.eat(TokenTag.KVar):
         return p_vardef(lexer)

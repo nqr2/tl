@@ -94,3 +94,6 @@ fn (c Bool lazy) while: (body pass lazy) -> pass =
 fn splat: (x i32) -> IntPair = {l=x, r=x}.
 fn (y IntPair) unsplat -> i32 = y l + y r.
 fn fma(x, y, z) = x + y * z.
+
+#[extern]
+decl (x f32) sin -> f32.

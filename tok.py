@@ -45,6 +45,7 @@ TokenTag = Enum(
         ("KDo", "do"),
         ("KPtr", "ptr"),
         ("KMut", "mut"),
+        ("KDecl", "decl"),
         ("KExtends", "extends"),
         ("Unknown", "<unknown>"),
     ],

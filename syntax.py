@@ -51,6 +51,19 @@ class Expr_Do:
 
 
 @dataclass
+class Attrlist:
+    attrs: [str]
+    wrapping: any
+
+@dataclass
+class MessageDeclaration:
+    receiver: (str, Type)
+    message: MessageName
+    arguments: [Argument]
+    returns: Type
+
+
+@dataclass
 class MessageDefinition:
     receiver: (str, Type)
     message: MessageName
