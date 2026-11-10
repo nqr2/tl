@@ -11,7 +11,7 @@ class Peek:
         return self._inner
 
     def load_(self, cp):
-        self._inner=cp
+        self._inner = cp
 
     def peek(self):
         if self._peek is None:
@@ -166,36 +166,69 @@ def lexer_(text, skip_comments=True):
 
                 integer = text[here : head.pos]
 
-                if head.peek() in 'rR':
+                if head.peek() in "rR":
                     next(head)
 
                     base = int(integer)
                     here2 = head.pos
 
-                    while head.peek().lower() in "0123456789abcdefghijklmnopqrstuvwxyz"[:base]:
+                    while (
+                        head.peek().lower()
+                        in "0123456789abcdefghijklmnopqrstuvwxyz"[:base]
+                    ):
                         next(head)
 
-                    word = text[here2:head.pos]
+                    word = text[here2 : head.pos]
 
-                    yield Token(tag=TokenTag.Int, start=here, end=head.pos, payload=int(word,base))
+                    yield Token(
+                        tag=TokenTag.Int,
+                        start=here,
+                        end=head.pos,
+                        payload=int(word, base),
+                    )
                     continue
 
-                if head.peek() == '.':
+                if head.peek() == ".":
                     next(head)
 
                     if head.peek() in "0123456789":
                         while head.peek() in "0123456789":
                             next(head)
 
+                        if head.peek() in "eE":
+                            next(head)
+
+                            if head.peek() in "+-":
+                                next(head)
+                            while head.peek() in "0123456789":
+                                next(head)
+
                         flt = text[here : head.pos]
-                        yield Token(tag=TokenTag.Float, start=here, end=head.pos, payload=float(flt))
+                        yield Token(
+                            tag=TokenTag.Float,
+                            start=here,
+                            end=head.pos,
+                            payload=float(flt),
+                        )
                         continue
-                    else: # yield both the int and the .
-                        yield Token(tag=TokenTag.Int, start=here, end=head.pos-1, payload=int(integer))
-                        yield Token(tag=TokenTag('.'), start=head.pos-1, end=head.pos,payload='.')
+                    else:  # yield both the int and the .
+                        yield Token(
+                            tag=TokenTag.Int,
+                            start=here,
+                            end=head.pos - 1,
+                            payload=int(integer),
+                        )
+                        yield Token(
+                            tag=TokenTag("."),
+                            start=head.pos - 1,
+                            end=head.pos,
+                            payload=".",
+                        )
                         continue
 
-                yield Token(tag=TokenTag.Int, start=here, end=head.pos, payload=int(integer))
+                yield Token(
+                    tag=TokenTag.Int, start=here, end=head.pos, payload=int(integer)
+                )
                 continue
 
             s = next(head)

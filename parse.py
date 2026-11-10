@@ -88,7 +88,6 @@ def p_eprim_nc(lexer):
         n = lexer.expect(TokenTag.Float).payload
         return syntax.Expr_Flt(n)
 
-
     if lexer.check(TokenTag.Identifier):
         name = lexer.expect(TokenTag.Identifier).payload
         return syntax.Expr_Variable(name)

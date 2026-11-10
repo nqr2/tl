@@ -28,3 +28,5 @@ fn maybe = "maybe this works well enough? who knows"
 
 var PI = 3.14592.
 var sixteen = 16r10.
+var fifteen = 2r1111.
+var million = 1.0e6.

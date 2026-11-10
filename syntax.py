@@ -171,9 +171,11 @@ class Expr_Str:
 class Expr_Char:
     inner: str
 
+
 @dataclass
 class Expr_Flt:
-    inner:float
+    inner: float
+
 
 @dataclass
 class Expr_Set:
@@ -245,6 +247,7 @@ class MArg_Mod:
 @dataclass
 class MExpr_Struct:
     mems: [any]
+
 
 @dataclass
 class ModuleDefinition:
