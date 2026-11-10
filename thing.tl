@@ -26,10 +26,10 @@ fn (self char) is-newline -> bool =
 fn maybe = "maybe this works well enough? who knows"
     Option(pass) Some: pass then unwrapOr: pass.
 
-var PI = 3.14592.
-var sixteen = 16r10.
-var fifteen = 2r1111.
-var million = 1.0e6.
+const PI = 3.14592.
+const sixteen = 16r10.
+const fifteen = 2r1111.
+const million = 1.0e6.
 
 fn (self char) newline? -> bool =
     self == `\n`.
@@ -44,3 +44,7 @@ fn predicate_off(the bool) -> fn(char)->bool =
         True  = #(char)newline?,  " #(receiver type) message "
         False = #tauto.           " #message "
         "since we don't have overloading just the name works"
+
+fn (x bool) id -> bool = x.
+
+const t = True then id then id then id then id.

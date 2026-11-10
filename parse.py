@@ -101,7 +101,7 @@ def p_eprim_nc(lexer):
             lexer.expect(TokenTag.RParen)
 
         if lexer.check({TokenTag.Identifier, TokenTag.Operator}):
-          parts = [lexer.expect({TokenTag.Identifier, TokenTag.Operator}).payload]
+            parts = [lexer.expect({TokenTag.Identifier, TokenTag.Operator}).payload]
         else:
             while lexer.check(TokenTag.Keyword):
                 parts.append(lexer.expect(TokenTag.Keyword).payload)
@@ -189,7 +189,7 @@ def p_usend(lexer, recv=None, andq=False):
 
 
 def p_binsend(lexer, recv=None, andq=False):
-    recv = recv or p_usend(lexer, recv, andq)
+    recv = p_usend(lexer, recv, andq)
 
     while lexer.check(TokenTag.Operator):
         op = lexer.expect(TokenTag.Operator).payload
@@ -201,7 +201,7 @@ def p_binsend(lexer, recv=None, andq=False):
 
 
 def p_kwsend(lexer, recv=None, andq=False):
-    recv = recv or p_binsend(lexer, recv, andq)
+    recv = p_binsend(lexer, recv, andq)
 
     parts = []
     args = []
@@ -226,18 +226,26 @@ def p_kwsend(lexer, recv=None, andq=False):
 #      | 'match' {cases...}
 def p_expr(lexer):
     p = p_kwsend(lexer)
-    if p is not None:
-        if lexer.eat(TokenTag.KThen):
-            p2 = p_kwsend(lexer, recv=p)
-            return p2
 
-        if lexer.eat(TokenTag.KAnd):
-            p2 = p_kwsend(lexer, recv=p, andq=True)
-            return p2
-        return p
+    if p is not None:
+        while True:
+            print(lexer.peek())
+
+            if lexer.eat(TokenTag.KThen):
+                p = p_kwsend(lexer, recv=p)
+                continue
+
+            if lexer.eat(TokenTag.KAnd):
+                p = p_kwsend(lexer, recv=p, andq=True)
+                continue
+
+            return p
 
     if lexer.eat(TokenTag.KVar):
         return p_vardef(lexer)
+
+    if lexer.eat(TokenTag.KConst):
+        return p_vardef(lexer, False)
 
     if lexer.eat(TokenTag.KMatch):
         return p_ematch(lexer)
@@ -273,12 +281,12 @@ def p_expr(lexer):
 
 
 # vardef = 'var' 'identifier' '=' expression.
-def p_vardef(lexer):
+def p_vardef(lexer, mutq=True):
     name = lexer.expect(TokenTag.Identifier).payload
     lexer.expect(TokenTag.Equal)
     value = p_expr(lexer)
 
-    return syntax.VariableDefinition(name, value)
+    return syntax.VariableDefinition(mutq, name, value)
 
 
 # ty(usage-side) = identifier | fn(args...) [-> ty]
@@ -631,6 +639,9 @@ def p_toplevel(lexer, insig=False):
 
     if lexer.eat(TokenTag.KVar):
         return p_vardef(lexer)
+
+    if lexer.eat(TokenTag.KConst):
+        return p_vardef(lexer, False)
 
     if lexer.eat(TokenTag.KFn):
         return p_fndef(lexer)

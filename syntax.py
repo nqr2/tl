@@ -84,12 +84,14 @@ class Type_Named:
 
 @dataclass
 class VariableDefinition:
+    mutq: bool
     name: str
     value: Expr
 
 
 @dataclass
 class VariableDeclaration:
+    mutq: bool
     name: str
 
 
@@ -176,10 +178,12 @@ class Expr_Char:
 class Expr_Flt:
     inner: float
 
+
 @dataclass
 class Expr_MsgRef:
     recv: Maybe[Type]
-    parts:[str]
+    parts: [str]
+
 
 @dataclass
 class Expr_Set:
