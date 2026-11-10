@@ -72,6 +72,10 @@ def p_eprim_nc(lexer):
         inner = p_eprim_nc(lexer)
         return syntax.Expr_Do(inner)
 
+    if lexer.check(TokenTag.String):
+        n = lexer.expect(TokenTag.String).payload
+        return syntax.Expr_Str(n)
+
     if lexer.check(TokenTag.Int):
         n = int(lexer.expect(TokenTag.Int).payload)
         return syntax.Expr_Int(n)
@@ -135,10 +139,10 @@ def p_eprim(lexer):
         args = []
 
         if not lexer.check(TokenTag.RParen):
-            args.append(p_eprim(lexer))
+            args.append(p_expr(lexer))
 
             while lexer.eat(TokenTag.Comma):
-                args.append(p_eprim(lexer))
+                args.append(p_expr(lexer))
 
         lexer.expect(TokenTag.RParen)
         p = syntax.Expr_Call(p, args)

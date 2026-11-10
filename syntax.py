@@ -153,6 +153,10 @@ class Expr_Load:
     inner: Expr
 
 @dataclass
+class Expr_Str:
+    inner: str
+
+@dataclass
 class Expr_Set:
     lv: Expr
     rv: Expr
