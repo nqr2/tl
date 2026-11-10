@@ -98,7 +98,7 @@ def lexer_(text, skip_comments=True):
 
                 continue
 
-            if head.peek() == '`':
+            if head.peek() == "`":
                 next(head)
                 w = next(head)
                 next(head)

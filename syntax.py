@@ -55,6 +55,7 @@ class Attrlist:
     attrs: [str]
     wrapping: any
 
+
 @dataclass
 class MessageDeclaration:
     receiver: (str, Type)
@@ -86,9 +87,11 @@ class VariableDefinition:
     name: str
     value: Expr
 
+
 @dataclass
 class VariableDeclaration:
     name: str
+
 
 @dataclass
 class TypeDefinition:
@@ -99,6 +102,7 @@ class TypeDefinition:
 @dataclass
 class TypeAbstract:
     name: str
+
 
 @dataclass
 class Matchcase_ty:
@@ -121,14 +125,17 @@ class RowMember:
 class Type_Row:
     rows: [RowMember]
 
+
 @dataclass
 class Type_Fn:
-    args:[Type]
-    ret:Type
+    args: [Type]
+    ret: Type
+
 
 @dataclass
 class Type_Ptr:
-    inner:Type
+    inner: Type
+
 
 class Expr:
     pass
@@ -148,9 +155,11 @@ class Expr_Int:
 class Expr_Pass:
     pass
 
+
 @dataclass
 class Expr_Load:
     inner: Expr
+
 
 @dataclass
 class Expr_Str:
@@ -160,6 +169,7 @@ class Expr_Str:
 @dataclass
 class Expr_Char:
     inner: str
+
 
 @dataclass
 class Expr_Set:
@@ -239,15 +249,18 @@ class ModuleDefinition:
     args: [any]
     value: MExpr
 
+
 @dataclass
 class ModuleParams:
-    params:[any]
+    params: [any]
+
 
 @dataclass
 class SigDefinition:
     name: str
-    args:[any]
+    args: [any]
     value: MExpr
+
 
 @dataclass
 class Expr_Row:

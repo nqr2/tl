@@ -21,4 +21,4 @@ fn example = (
 ).
 
 fn (self char) is-newline -> bool =
-    self == `N` .
+    self == `N`.
