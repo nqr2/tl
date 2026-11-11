@@ -1,4 +1,5 @@
 mod lexer;
+mod parse;
 mod token;
 
 use std::fs::read_to_string;

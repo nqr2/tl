@@ -1,5 +1,6 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Tag {
+    Error,      // <error>
     Eof,        // <end of file>
     Identifier, // <identifier>
     Keyword,    // identifier:
