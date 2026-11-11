@@ -565,36 +565,30 @@ def p_mpexpr(lexer, insig=False):
 
 
 def p_mexpr(lexer, insig=False):
-    def l_mca(l):
-        if l.eat(TokenTag.KType):
-            return p_ty(l)
-
-        return p_mexpr(l)
-
     p = p_mpexpr(lexer, insig)
 
     while lexer.eat(TokenTag.LParen):
-        args=[]
+        args = []
 
         if not lexer.check(TokenTag.RParen):
-            args.append(l_mca(lexer))
+            args.append(p_marg(lexer))
 
             while lexer.eat(TokenTag.Comma):
-                args.append(l_mca(lexer))
+                args.append(p_marg(lexer))
 
         lexer.expect(TokenTag.RParen)
 
-        p = syntax.MExpr_Call(p,args)
+        p = syntax.MExpr_Call(p, args)
 
     return p
 
 
 def p_marg(lexer):
     if lexer.eat(TokenTag.KType):
-        name = lexer.expect(TokenTag.Identifier).payload
+        name = p_ty(lexer)
         return syntax.MArg_Ty(name)
 
-    name = lexer.expect(TokenTag.Identifier).payload
+    name = p_mexpr(lexer)
     return syntax.MArg_Mod(name)
 
 
