@@ -416,6 +416,26 @@ def p_fndecl(lexer):
     if lexer.check(TokenTag.LParen):
         recv = p_recv(lexer)
 
+
+    if lexer.check(TokenTag.Operator):
+        name = [lexer.expect(TokenTag.Operator).payload]
+        arg = [0]
+
+        if lexer.check(TokenTag.LParen):
+            arg[0] = p_recv(lexer) # parsed exactly how we want it?
+        else:
+            arg[0] = p_arg(lexer)
+
+        if lexer.eat(TokenTag.RArrow):
+            ret = p_ty(lexer)
+
+        return syntax.MessageDeclaration(
+            receiver=recv,
+            message=syntax.MessageName_1(name),
+            arguments=arg,
+            returns=ret
+        )
+
     if lexer.check(TokenTag.Keyword):
         name = []
         args = []
