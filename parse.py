@@ -229,8 +229,6 @@ def p_expr(lexer):
 
     if p is not None:
         while True:
-            print(lexer.peek())
-
             if lexer.eat(TokenTag.KThen):
                 p = p_kwsend(lexer, recv=p)
                 continue
@@ -483,6 +481,30 @@ def p_fndef(lexer):
 
     if lexer.check(TokenTag.LParen):
         recv = p_recv(lexer)
+
+
+    if lexer.check(TokenTag.Operator):
+        name = [lexer.expect(TokenTag.Operator).payload]
+        arg = [0]
+
+        if lexer.check(TokenTag.LParen):
+            arg[0] = p_recv(lexer) # parsed exactly how we want it?
+        else:
+            arg[0] = p_arg(lexer)
+
+        if lexer.eat(TokenTag.RArrow):
+            ret = p_ty(lexer)
+
+        lexer.expect(TokenTag.Equal)
+        value = p_expr(lexer)
+
+        return syntax.MessageDefinition(
+            receiver=recv,
+            message=syntax.MessageName_1(name),
+            arguments=arg,
+            returns=ret,
+            value=value,
+        )
 
     if lexer.check(TokenTag.Keyword):
         name = []

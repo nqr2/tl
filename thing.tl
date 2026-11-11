@@ -1,5 +1,4 @@
-module Array4(type T) = {
-    type inner = [4]T
-}.
+fn (l i32) + r i32 -> i32 = 0.
 
-module Array4_I32 = Array4(type i32).
+fn add(l, r) -> i32 =
+    l + r.
