@@ -300,6 +300,12 @@ def p_ty(lexer):
         name = lexer.expect(TokenTag.Identifier).payload
         return syntax.Type_Named(name)
 
+    if lexer.eat(TokenTag.LBrac):
+        n = lexer.expect(TokenTag.Int).payload
+        lexer.expect(TokenTag.RBrac)
+        inner = p_ty(lexer)
+        return syntax.Type_Arr(n, inner)
+
     if lexer.eat(TokenTag.KFn):
         args = []
         ret = None
@@ -541,7 +547,7 @@ def p_fndef(lexer):
     )
 
 
-def p_mexpr(lexer, insig=False):
+def p_mpexpr(lexer, insig=False):
     if lexer.eat(TokenTag.LCurl):
         mems = []
 
@@ -553,6 +559,34 @@ def p_mexpr(lexer, insig=False):
 
         lexer.expect(TokenTag.RCurl)
         return syntax.MExpr_Struct(mems)
+
+    if lexer.check(TokenTag.Identifier):
+        return syntax.MExpr_Named(lexer.expect(TokenTag.Identifier).payload)
+
+
+def p_mexpr(lexer, insig=False):
+    def l_mca(l):
+        if l.eat(TokenTag.KType):
+            return p_ty(l)
+
+        return p_mexpr(l)
+
+    p = p_mpexpr(lexer, insig)
+
+    while lexer.eat(TokenTag.LParen):
+        args=[]
+
+        if not lexer.check(TokenTag.RParen):
+            args.append(l_mca(lexer))
+
+            while lexer.eat(TokenTag.Comma):
+                args.append(l_mca(lexer))
+
+        lexer.expect(TokenTag.RParen)
+
+        p = syntax.MExpr_Call(p,args)
+
+    return p
 
 
 def p_marg(lexer):

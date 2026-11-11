@@ -135,6 +135,12 @@ class Type_Fn:
 
 
 @dataclass
+class Type_Arr:
+    n: int
+    inner: Type
+
+
+@dataclass
 class Type_Ptr:
     constq: bool
     inner: Type
@@ -255,6 +261,17 @@ class MArg_Mod:
 @dataclass
 class MExpr_Struct:
     mems: [any]
+
+
+@dataclass
+class MExpr_Named:
+    nm: str
+
+
+@dataclass
+class MExpr_Call:
+    ce: any
+    args: [any]
 
 
 @dataclass
