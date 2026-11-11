@@ -1,3 +1,4 @@
+mod combinator;
 mod lexer;
 mod parse;
 mod token;

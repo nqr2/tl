@@ -142,11 +142,11 @@ impl<'a> Lexer<'a> {
 
         self.step_while(|c| c.is_alphanumeric() || "_-".contains(c));
 
-        if self.peek_().map_or(false, |c| "?!#".contains(c)) {
+        if self.peek_().is_some_and(|c| "?!#".contains(c)) {
             self.step_();
         }
 
-        if self.peek_().map_or(false, |c| c == ':') {
+        if self.peek_() == Some(':') {
             tag = Tag::Keyword;
         }
 
@@ -180,7 +180,7 @@ impl<'a> Lexer<'a> {
 
         if self
             .peek_()
-            .map_or(false, |c| c.to_ascii_lowercase() == 'r')
+            .is_some_and(|c| c.eq_ignore_ascii_case(&'r'))
         {
             let base = usize::from_str_radix(&self.text[start..self.position], 10)
                 .map_err(|_| Error::InvalidBase)?;
@@ -198,7 +198,7 @@ impl<'a> Lexer<'a> {
             return Ok(self.mktoken_ex(Tag::Int, start, Extra::Int(int)));
         }
 
-        if self.peek_().map_or(false, |c| c == '.') {
+        if self.peek_() == Some('.') {
             self.step_();
 
             self.step_while(|c| c.is_ascii_digit());
@@ -265,7 +265,7 @@ impl<'a> Lexer<'a> {
 
         let chr = self.step_char_(here)?;
 
-        if self.peek_().map_or(false, |c| c == '`') {
+        if self.peek_() == Some('`') {
             return Err(Error::InvalidChar { start: here });
         }
 
@@ -279,7 +279,7 @@ impl<'a> Lexer<'a> {
             Some(c) => {
                 if c.is_whitespace() {
                     self.skip_ws();
-                    return self.lex();
+                    self.lex()
                 } else if c == '"' {
                     self.comment()
                 } else if let Some(tag) = maybe_single_char(c) {
