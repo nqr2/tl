@@ -1,6 +1,6 @@
 // i'm not porting everything as-is, time for combinators or smth
 
-use crate::parse::LexerWrapper;
+use crate::lexer_wrapper::LexerWrapper;
 use crate::token::{Extra, Tag};
 
 pub trait Combinator: Sized {

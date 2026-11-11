@@ -1,6 +1,6 @@
 mod combinator;
 mod lexer;
-mod parse;
+mod lexer_wrapper;
 mod token;
 
 use std::fs::read_to_string;
