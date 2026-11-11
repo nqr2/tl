@@ -1,28 +1,28 @@
-#[derive(PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Tag {
     Eof,        // <end of file>
     Identifier, // <identifier>
     Keyword,    // identifier:
     Operator,   // <operator>
+    Comment,    // "comment..."
+    String,     // 'string...'
+    Char,       // `c`
+    Int,        // <integer>
+    Float,      // <float>
     LParen,     // (
     RParen,     // )
     LBrac,      // [
     RBrac,      // ]
-    Comment,    // "comment..."
-    Equal,      // =
-    Arrow,      // ->
     LCurl,      // {
     RCurl,      // }
+    Equal,      // =
+    Arrow,      // ->
     Hash,       // #
     Comma,      // ,
     At,         // @
     Semicolon,  // ;
     Colon,      // :
     Dot,        // .
-    String,     // 'string...'
-    Char,       // `c`
-    Int,        // <integer>
-    Float,      // <float>
     Module,     // module
     Import,     // import
     Type,       // type
@@ -42,8 +42,18 @@ pub enum Tag {
     Extends,    // extends
 }
 
+#[derive(Debug)]
+pub enum Extra {
+    Str(String),
+    Char(char),
+    Int(u128),
+    Float(f64),
+}
+
+#[derive(Debug)]
 pub struct Token<'a> {
     pub tag: Tag,
     pub span: (usize, usize),
     pub slice: &'a str,
+    pub extra: Option<Extra>,
 }
